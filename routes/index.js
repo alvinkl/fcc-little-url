@@ -1,15 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const assert = require('assert');
-const mongoose = require('mongoose');
+
+const db = require('monk')('admin:admin@ds133368.mlab.com:33368/little-url-fcc');
+const URL = db.get('url-data');
 
 const validateUrl = require('../controller/validateUrl');
 const linkGenerator = require('../controller/linkGenerator');
-
-const url = 'admin:admin@ds133368.mlab.com:33368/little-url-fcc'
-mongoose.Promise = global.Promise;
-mongoose.createConnection(url);
-var Url = require('../model/url_model');
 
 /* GET home page. */
 router.get('/', (req, res, next) => {
@@ -30,8 +26,7 @@ router.get('/new/:url*', (req, res, next) => {
       "short_url": 'localhost:8080/' + linkGenerator()
     };
     res.send(urlObj);
-    var data = new Url(urlObj);
-    data.save();
+    URL.insert(urlObj);
   }
   else {
     urlObj = {
@@ -43,15 +38,13 @@ router.get('/new/:url*', (req, res, next) => {
 
 router.get('/:url*', (req, res, next) => {
   var url = req.get('host') + req.originalUrl;
-  console.log(url + ' entering find');
 
-  Url.findOne({ "short_url": url }, (err, result) => {
-    if (err) throw err;
-    if (result) {
-      console.log('Found ' + result);
+  URL.findOne({ "short_url": url }).then((data) => {
+    if (data) {
+      res.redirect(data.original_url);
     }
     else {
-      res.send('Site not found');
+      res.send('Invalid url!');
     }
   })
 })
