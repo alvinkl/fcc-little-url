@@ -19,11 +19,11 @@ router.get('/new/', (req, res, next) => {
 
 router.get('/new/:url*', (req, res, next) => {
   var url = req.url.replace(/.*:\/\//g, '');
-
+  console.log(url);
   var urlObj = {};
   if (validateUrl(url)) {
     urlObj = {
-      "original_url": url,
+      "original_url": 'http://' + url,
       "short_url": req.headers.host + '/' + linkGenerator()
     };
     res.send(urlObj);
