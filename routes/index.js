@@ -10,6 +10,7 @@ const linkGenerator = require('../controller/linkGenerator');
 /* GET home page. */
 router.get('/', (req, res, next) => {
   res.render('index', { title: 'Little-url' });
+  console.log(req.headers.host);
 });
 
 router.get('/new/', (req, res, next) => {
@@ -18,12 +19,12 @@ router.get('/new/', (req, res, next) => {
 
 router.get('/new/:url*', (req, res, next) => {
   var url = req.url.replace(/.*:\/\//g, '');
-  console.log(validateUrl(process.env));
+
   var urlObj = {};
   if (validateUrl(url)) {
     urlObj = {
       "original_url": url,
-      "short_url": 'localhost:8080/' + linkGenerator()
+      "short_url": req.headers.host + '/' + linkGenerator()
     };
     res.send(urlObj);
     URL.insert(urlObj);
@@ -38,7 +39,7 @@ router.get('/new/:url*', (req, res, next) => {
 
 router.get('/:url*', (req, res, next) => {
   var url = req.get('host') + req.originalUrl;
-
+  console.log(process.env.APP_URL);
   URL.findOne({ "short_url": url }).then((data) => {
     if (data) {
       res.redirect(data.original_url);
